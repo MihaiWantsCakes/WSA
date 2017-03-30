@@ -1,0 +1,18 @@
+{
+  "name": "youtubeassistant",
+  "version": "1.0.0",
+  "description": "A voice recognition service capable of executing queries on Youtube API",
+  "main": "index.js",
+  "scripts": {
+    "start": "webpack-dev-server --hot"
+  },
+  "author": "Pavel, Mihai, Rares",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "speech-to-text": "^0.4.4",
+    "webpack": "^2.3.2",
+    "webpack-dev-server": "^2.4.2"
+  }
+}
