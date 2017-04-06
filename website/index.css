@@ -1,0 +1,9 @@
+.thumbnail {
+    border: 5px solid #000;
+    padding: 20px;
+    margin: 20px;
+}
+
+.settings-thumbnail {
+    float: right;
+}
