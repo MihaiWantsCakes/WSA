@@ -49,13 +49,23 @@ io.on('connection', function(socket){ //////on connection success
         if (mySentence == ' next page' || mySentence == 'next page' ) {
           var msg = 'switching tabs...';
           socket.emit('switch next tab', msg);
-          console.log("switching tabs...");
         }
         if (mySentence == ' back' || mySentence == 'back' || mySentence == ' go back'  || mySentence == 'go back') {
           var msg = 'switching previous tab...';
           socket.emit('go back', msg);
-          console.log("switching previous tab...");
+
         }
+        if (mySentence == ' home' || mySentence == 'home' || mySentence == ' homepage'  || mySentence == 'homepage') {
+          var msg = 'Switching to homepage...';
+          socket.emit('go to homepage', msg);
+
+        }
+        if (mySentence == ' video page' || mySentence == 'video page' ) {
+          var msg = 'Switching to watch video page...';
+          socket.emit('go to video page', msg);
+
+        }
+
       });
 
   socket.on('disconnect', function(){ /////on disconnect
@@ -100,24 +110,3 @@ function searchOnYoutube(keyphrase){
   var preparedrequest = baseURL + searchquery + apikey;
   postToYoutube(preparedrequest);
 }
-
-
-
-
-//OLD CODE..................
-
-// app.post('/show', function(req, res){
-//
-//       var json = JSON.stringify(req.body);
-//       var parsed = JSON.parse(json).request.intent.slots.what.value;
-//
-//       console.log("showing result:" + parsed);
-//
-//       if(parsed === "news"){
-//             io.emit('news');
-//       }
-//       else if(parsed === "sports"){
-//             io.emit('sports');
-//       }
-//
-// });
