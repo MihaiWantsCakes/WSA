@@ -1,0 +1,20 @@
+.container {
+    overflow: hidden;
+}
+
+.video-container {
+    max-height: 800px;
+    max-width: 1420px;
+    overflow: hidden;
+}
+
+.fluid-container {
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 800px;
+  max-width: 1420px;
+  overflow: hidden;
+
+}

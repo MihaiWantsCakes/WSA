@@ -1,0 +1,22 @@
+.fluid-container {
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 800px;
+  max-width: 1600px;
+  overflow: hidden;
+
+}
+
+#name {
+    padding-left: 50px;
+}
+
+#copyright {
+    padding-left: 50px;
+}
+
+#project-title {
+    padding-right: 10px;
+} 
