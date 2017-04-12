@@ -13,12 +13,10 @@ import PageLogWindow from './components/PageLogWindow.jsx';
 
 //GLOBALS
 var active_tab = 'Homepage';
-var user_input_log = [];
-var data = [];
-var last_message = 'last message';
+var request_from_user = 'request';
+var response_from_server = 'response';
 
 //FUNCTIONS
-
 var executeAction = function(action, target, message){
     if(action == 'go to'){
       setActiveTab(target, message);
@@ -29,24 +27,23 @@ var executeAction = function(action, target, message){
 }
 
 var setActiveTab = function(tab, message){
-  last_message = message;
+  request_from_user = message;
   active_tab = tab;
   console.log("active tab set!" + tab);
-  ReactDOM.render(<App last_message={last_message} active_tab={active_tab}/>, document.getElementById('app'));
+  ReactDOM.render(<App request_from_user={request_from_user} response_from_server={response_from_server} active_tab={active_tab}/>, document.getElementById('app'));
 };
 
 var updateLog = function(message){
-  last_message = message;
+  request_from_user = message;
   console.log("log bar updated");
-//  ReactDOM.render(<App last_message={last_message} active_tab={active_tab}/>, document.getElementById('app'));
+  ReactDOM.render(<App request_from_user={request_from_user} response_from_server={response_from_server} active_tab={active_tab}/>, document.getElementById('app'));
 };
 
  var sendMessage = function(text){
+   request_from_user = text;
    socket.emit('message', text);
-   console.log("sentence sent");
+   console.log("sentence sent: " + text );
  };
-
-
 
 //SPEACH API
 try {
@@ -61,11 +58,14 @@ try {
 
 
 //SOCKET.IO
+
 var socket = io('http://localhost:8000');
 socket.on('connection', function(){
   this.socket.emit('message');
   console.log("connection established!");
 });
+
+//PAGE ROUTING
 
 socket.on('switch next tab', function(msg){
   console.log("the message: "+msg);
@@ -83,8 +83,8 @@ socket.on('go to video page', function(msg){
 
 socket.on('go to homepage', function(msg){
   console.log("the message: "+msg);
-  executeAction('update log', msg);
-  executeAction('go to', 'Homepage', msg);
+  executeAction('go to', 'Homepage', request_from_user);
+  executeAction('update log', request_from_user);
 });
 
 socket.on('go to settings page', function(msg){
@@ -104,4 +104,18 @@ socket.on('show help window', function(msg){
 });
 
 
-ReactDOM.render(<App last_message={last_message}/>, document.getElementById('app'));
+//PLAYER FUNCTIONS
+
+socket.on('play current', function(msg){
+  console.log("the message: "+msg);
+  executeAction('play', 'Watch');
+});
+
+socket.on('stop current', function(msg){
+  console.log("the message: "+msg);
+  executeAction('stop', 'Watch');
+});
+
+
+
+ReactDOM.render(<App request_from_user={request_from_user} response_from_server={response_from_server} active_tab={active_tab}/>, document.getElementById('app'));

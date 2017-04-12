@@ -46,29 +46,96 @@ io.on('connection', function(socket){ //////on connection success
 
   socket.on('message', function(mySentence){
     console.log("Sentence received:" + mySentence);
-        // if (mySentence == ' next page' || mySentence == 'next page' ) {
-        //   var msg = 'switching tabs...';
-        //   socket.emit('switch next tab', msg);
-        // }
-        // if (mySentence == ' back' || mySentence == 'back' || mySentence == ' go back'  || mySentence == 'go back') {
-        //   var msg = 'switching previous tab...';
-        //   socket.emit('go back', msg);
 
-        // }
-        // if (mySentence == ' home' || mySentence == 'home' || mySentence == ' homepage'  || mySentence == 'homepage') {
-        //   var msg = 'Switching to homepage...';
-        //   socket.emit('go to homepage', msg);
-
-        // }
-        // if (mySentence == ' video page' || mySentence == 'video page' ) {
-        //   var msg = 'Switching to watch video page...';
-        //   socket.emit('go to video page', msg);
-
-        // }
 
         //############################################################################################################ Pavel call me so I can explain what I did here :D #################################################################
 
+        var executeLogic = function(onWhat){
+            console.log("have a nice day" + onWhat);
+
+            //check if the data contains word "favorites"
+            if((onWhat.indexOf('favorites') > -1 && onWhat.indexOf('show') > -1) ||
+               (onWhat.indexOf('show') && onWhat.indexOf('favorite') > -1 &&   onWhat.indexOf('videos') > -1)){
+
+                //open tab with favorites
+                var msg = "Viewing favorite videos";
+                socket.emit("Viewing favorite videos", msg);
+                console.log("emitting data: " + msg );
+            }
+            //check if data array contains "show, trending" in a sentence
+            else if((onWhat.indexOf('trending') > -1 && onWhat.indexOf('show') > -1) ||
+               (onWhat.indexOf('show') && onWhat.indexOf('trending') > -1 &&   onWhat.indexOf('videos') > -1)){
+
+                //open tab with trending videos
+                var msg = "Viewing favorite videos";
+                socket.emit("Viewing favorite videos", msg);
+                console.log("emitting data: " + msg );
+            }
+            else if((onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1 && onWhat.indexOf('number') > -1)){
+              //take next word from word "number"
+              if(onWhat[onWhat.indexOf('number') + 1] != ''){
+                //if the next word after word "number" is not empty - read it
+                //msg will contain an integer or a number value as a word;
+                //TODO --- integrate middleware for number output unification (either int either word)
+                var msg = onWhat[onWhat.indexOf('number') + 1];
+                //emmit command and video number to client
+                socket.emit("Select video", msg);
+                console.log("Selecting video " + onWhat[onWhat.indexOf('number') + 1] + " from the list");
+              }
+            }
+            else if((onWhat.indexOf('search') > -1 && onWhat.indexOf('for') > -1)){
+              //take all words after word "for"
+            }
+            else if((onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1) ||
+                     onWhat.indexOf('play') > -1)){
+              //start playing video currently set in a player window
+                var msg = "Playing currently selected video";
+                socket.emit("play current", msg);
+                console.log("emitting data: " + msg);
+            }
+            else if((onWhat.indexOf('stop') > -1 && onWhat.indexOf('video') > -1) ||
+                     onWhat.indexOf('stop') > -1)){
+              //stop playing video currently set in a player window
+              var msg = "Stopping currently selected video";
+              socket.emit("stop current", msg);
+              console.log("emitting data: " + msg);
+            }
+            else if((onWhat.indexOf('next') > -1 && onWhat.indexOf('video') > -1) ||
+                     onWhat.indexOf('next') > -1)){
+              //play next video in a player window (low priority)
+            }
+            else if((onWhat.indexOf('previous') > -1 && onWhat.indexOf('video') > -1) ||
+                     onWhat.indexOf('previous') > -1)){
+              //play previous video in a player window (low priority)
+            }
+          };
+
+
+        //function split will split a string into words and insert them into an array
+        var transformedSentence = mySentence.split(" ");
+        console.log("transformed sentence:" + transformedSentence);
+        //catch a trigger word "please"
+        //an if statement below will deal with a white space in a beginning of some sentences
+        if(transformedSentence[0] != ''){
+          if( transformedSentence[0] == 'please'){
+            var data = transformedSentence.slice(1, transformedSentence.length);
+            executeLogic(data);
+
+          }
+        }
+        else{
+          if( transformedSentence[1] == 'please'){
+            var data = transformedSentence.slice(2, transformedSentence.length);
+            executeLogic(data);
+
+          }
+        }
+
+
+
+
         var word = '';
+        var sentence = mySentence;
 
         var utterance1 = "search";                      //search for keyword
         var utterance2 = "create";                      //create account
@@ -85,36 +152,52 @@ io.on('connection', function(socket){ //////on connection success
                 word += sentence.charAt(i);
                 if (i == sentence.length - 1) {
                     if (word == utterance1) {
+                        var substring = sentence.substring(sentence.indexOf("search") + 7);
+                        if (substring.search("for") == -1) {
+                            var keyword = substring;
+                        }
+                        else {
+                            var keyword = substring.substring(substring.indexOf("for") + 4);
+                        }
+
                         var msg = "Searching by keyword";
                         socket.emit("Searching by keyword", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance2) {
                         var msg = "Creating account";
                         socket.emit("Creating account", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance3) {
                         var msg = "Switching to account";
                         socket.emit("Switching to account", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance4) {
                         var msg = "Viewing favorite videos";
                         socket.emit("Viewing favorite videos", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance5) {
                         var msg = "Viewing trending videos";
                         socket.emit("Viewing trending videos", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance6) {
                         var msg = "Viewing previously watched videos";
                         socket.emit("Viewing previously watched videos", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance7) {
                         var msg = "Adding video to 'Watch later' list";
                         socket.emit("Adding video to 'Watch later' list", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance8) {
                         var msg = "Adding video to favorites";
                         socket.emit("Adding video to favorites", msg);
+                        console.log("emitting data: " + msg );
                     }
                     else if (word == utterance9) {
                         if ((sentence.search("one") != -1) || (sentence.search("two") != -1) || (sentence.search("three") != -1) || (sentence.search("four") != -1) || (sentence.search("five") != -1) || (sentence.search("six") != -1) || (sentence.search("1") != -1) || (sentence.search("2") != -1) || (sentence.search("3") != -1) || (sentence.search("4") != -1) || (sentence.search("5") != -1) || (sentence.search("6") != -1)) {
@@ -140,7 +223,7 @@ io.on('connection', function(socket){ //////on connection success
                             var msg = "Selecting video from list";
                             socket.emit("Selecting video from list", msg);
                         }
-                        
+
                         else if (sentence.search("next") != -1) {
                             var msg = "Playing next video from playlist";
                             socket.emit("Playing next video from playlist", msg);
@@ -157,6 +240,14 @@ io.on('connection', function(socket){ //////on connection success
                 }
             }
             else if (word == utterance1) {
+                var substring = sentence.substring(sentence.indexOf("search") + 7);
+                if (substring.search("for") == -1) {
+                    var keyword = substring;
+                }
+                else {
+                    var keyword = substring.substring(substring.indexOf("for") + 4);
+                }
+
                 var msg = "Searching by keyword";
                 socket.emit("Searching by keyword", msg);
                 break;
@@ -248,21 +339,6 @@ io.on('connection', function(socket){ //////on connection success
 
 
 
-
-//=============================================extract keywords from data received from Alexa
-function extractValues(req){
-   var json = JSON.stringify(req.body);
-   console.log("json parsed: " + req.json);
-   var parsedvalues = new Array();
-    parsedvalues["v1"] = JSON.parse(json).request.intent.slots.keywordOne.value;
-    parsedvalues["v2"] = JSON.parse(json).request.intent.slots.keywordTwo.value;
-    parsedvalues["v3"] = JSON.parse(json).request.intent.slots.keywordThree.value;
-    parsedvalues["v4"] = JSON.parse(json).request.intent.slots.keywordFour.value;
-    parsedvalues["v5"] = JSON.parse(json).request.intent.slots.keywordFive.value;
-
-    return parsedvalues;
-
-};
 
 //=============================================create POST request to youtube
 function postToYoutube(url){
