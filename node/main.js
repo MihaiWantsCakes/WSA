@@ -152,6 +152,14 @@ io.on('connection', function(socket){ //////on connection success
                 word += sentence.charAt(i);
                 if (i == sentence.length - 1) {
                     if (word == utterance1) {
+                        var substring = sentence.substring(sentence.indexOf("search") + 7);
+                        if (substring.search("for") == -1) {
+                            var keyword = substring;
+                        }
+                        else {
+                            var keyword = substring.substring(substring.indexOf("for") + 4);
+                        }
+
                         var msg = "Searching by keyword";
                         socket.emit("Searching by keyword", msg);
                         console.log("emitting data: " + msg );
@@ -232,6 +240,14 @@ io.on('connection', function(socket){ //////on connection success
                 }
             }
             else if (word == utterance1) {
+                var substring = sentence.substring(sentence.indexOf("search") + 7);
+                if (substring.search("for") == -1) {
+                    var keyword = substring;
+                }
+                else {
+                    var keyword = substring.substring(substring.indexOf("for") + 4);
+                }
+
                 var msg = "Searching by keyword";
                 socket.emit("Searching by keyword", msg);
                 break;
