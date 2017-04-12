@@ -1,5 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import YouTube from 'react-youtube';
+
+
 
 
 
@@ -11,13 +14,8 @@ class WatchVideoPage extends React.Component{
 
   render(){
     return(
-      <div style={{width:'100%', display:'flex'}}>
-        <div style={{width:'30%'}}>
-          <h3>Playlist</h3>
-          <VideoList/>
-        </div>
-        <div style={{width:'50%'}}>
-          <h3>Watch Video</h3>
+      <div className="flex-center">
+        <div className="col-md-12">
           <SingleVideo/>
         </div>
       </div>
@@ -26,27 +24,33 @@ class WatchVideoPage extends React.Component{
 }
 
 
-class VideoList extends React.Component {
-  render(){
-    return(
-      <div>
-        <ul>
-          <li>Video #1</li>
-          <li>Video #2</li>
-          <li>Video #3</li>
-          <li>Video #4</li>
-          <li>Video #5</li>
-        </ul>
-      </div>
-    );
-  }
-}
-
 class SingleVideo extends React.Component{
+  constructor(props) {
+    super(props);
+    this.onPlay = this.onPlay.bind(this);
+    this.onPause = this.onPause.bind(this);
+  }
+  onPlay(event){
+    event.target.playVideo();
+  }
+  onPause(event){
+    event.target.pauseVideo();
+  }
+  onReady(event){
+    event.target.pauseVideo();
+  }
+
   render(){
+    //the videoId should be coming from parent class
     return(
       <div>
-        <img src="https://blog.majestic.com/wp-content/uploads/2010/10/Video-Icon-crop.png"></img>
+        <YouTube
+          videoId="pQC3ErD1YwE"
+          opts={this.props.opts}
+          onReady={this.onPause}
+          onPause={this.onPause}
+          onPlay={this.onPlay}
+          />
       </div>
     );
   }

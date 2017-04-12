@@ -9,18 +9,27 @@ import io from 'socket.io-client';
 class PageLogWindow extends React.Component {
     constructor(props){
       super(props);
+
       };
+
+
+      componentDidMount()
+      {
+
+      console.log('zajebali');
+      };
+    componentDidUpdate(prevProps, prevState){
+        if(prevProps.last_message != this.props.state){
+          var message = document.getElementById('output');
+          output.innerText = this.props.last_message;
+        }
+      }
 
 
     render() {
         return (
           <div>
-            <h3>
-              Server action
-            </h3>
-            <h4>
-              {this.props.last_message}
-            </h4>
+            <h4 className="text-center" id="output">{this.props.last_message}</h4>
           </div>
           );
        }
