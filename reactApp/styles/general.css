@@ -187,6 +187,11 @@
 
 /*CUSTOM ELEMENTS*/
 
+.video_card_image{
+  width: 100%;
+  height: auto;
+}
+
 iframe{
   width: 510px;
   height: 290px;

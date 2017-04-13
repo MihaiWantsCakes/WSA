@@ -3,6 +3,7 @@ var fs = require('fs');
 var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+var request = require('request');
 
 var socket = io;
 //=============================================Start HTTPS server on port 8000
@@ -83,29 +84,38 @@ io.on('connection', function(socket){ //////on connection success
                 console.log("Selecting video " + onWhat[onWhat.indexOf('number') + 1] + " from the list");
               }
             }
-            else if((onWhat.indexOf('search') > -1 && onWhat.indexOf('for') > -1)){
-              //take all words after word "for"
+            else if(onWhat.indexOf('search') > -1 && onWhat.indexOf('for') > -1){
+              //take all words besides "for" and "search"
+              var plainkeywords = onWhat;
+              plainkeywords.splice(plainkeywords.indexOf('search'), 1);
+              plainkeywords.splice(plainkeywords.indexOf('for'), 1);
+
+              console.log("plain keywords: " + plainkeywords);
+              //Use plainkeywords to make a request to youtube
+              searchOnYoutube(plainkeywords.join('&'));
+                console.log("Search was invoked! ");
+
             }
             else if((onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1) ||
-                     onWhat.indexOf('play') > -1)){
+                     onWhat.indexOf('play') > -1){
               //start playing video currently set in a player window
                 var msg = "Playing currently selected video";
                 socket.emit("play current", msg);
                 console.log("emitting data: " + msg);
             }
             else if((onWhat.indexOf('stop') > -1 && onWhat.indexOf('video') > -1) ||
-                     onWhat.indexOf('stop') > -1)){
+                     onWhat.indexOf('stop') > -1){
               //stop playing video currently set in a player window
               var msg = "Stopping currently selected video";
               socket.emit("stop current", msg);
               console.log("emitting data: " + msg);
             }
             else if((onWhat.indexOf('next') > -1 && onWhat.indexOf('video') > -1) ||
-                     onWhat.indexOf('next') > -1)){
+                     onWhat.indexOf('next') > -1){
               //play next video in a player window (low priority)
             }
             else if((onWhat.indexOf('previous') > -1 && onWhat.indexOf('video') > -1) ||
-                     onWhat.indexOf('previous') > -1)){
+                     onWhat.indexOf('previous') > -1){
               //play previous video in a player window (low priority)
             }
           };
@@ -324,16 +334,8 @@ io.on('connection', function(socket){ //////on connection success
 
 
 
-//=============================================create POST request to youtube
-function postToYoutube(url){
-  request.post(
-      url, function (error, response, body) {
-          if (!error && response.statusCode == 200) {
-              console.log(body)
-          }
-      }
-  );
-}
+
+
 
 //=============================================search by keyphrase or keyword
 function searchOnYoutube(keyphrase){
@@ -341,5 +343,50 @@ function searchOnYoutube(keyphrase){
   var baseURL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=";
   var searchquery = keyphrase + "&key=";
   var preparedrequest = baseURL + searchquery + apikey;
-  postToYoutube(preparedrequest);
+  console.log("YOUTUBE URL: " + preparedrequest);
+  console.log("1. posting to youtube");
+  return postToYoutube(preparedrequest);
+}
+
+
+//=============================================create POST request to youtube
+function postToYoutube(url){
+
+  var headers = {
+      'User-Agent':       'Super Agent/0.0.1',
+      'Content-Type':     'application/x-www-form-urlencoded'
+  }
+
+  var options = {
+    url: url,
+    method: 'GET',
+    headers: headers,
+    qs: {'key1': 'xxx', 'key2': 'yyy'}
+  }
+
+  request( options, function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            console.log("2. parsing response body...");
+                return extractPlaylist(body);
+          }
+          else if(error){
+            console.log(error);
+            console.log("something went wrong :(");
+            return "";
+          }
+      });
+
+
+}
+
+
+
+//==============================================extract video playlist from response body
+
+function extractPlaylist(responseBody){
+
+
+
+  socket.emit("search for", responseBody);
+  console.log("emitting response body to the client!");
 }
