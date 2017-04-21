@@ -4,7 +4,9 @@ var app = require('express')();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 var request = require('request');
-
+var MongoClient = require('mongodb').MongoClient
+  , assert = require('assert');
+var mongoose = require('mongoose');
 var socket = io;
 //=============================================Start HTTPS server on port 8000
 server.listen(8000);
@@ -31,60 +33,47 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
-
-//=============================================POST method listener
-app.post('/', function(req, res){
-
-  console.log("got it!");
-  console.log("parsed value from function: "+extractValues(req)["v1"]);
-
+//connect to database server on localhost
+var favoriteVideoModel = mongoose.model('favoriteVideo',
+{
+  videoId: String,
+  videoTitle: String,
+  videoDescription: String,
+  videoThumbnailUrl: String
 });
+mongoose.connect('mongodb://localhost/favoriteVideos');
 
+var addToFavorites = function(video) {
+try{
+      mongoose.favoriteVideos.save(video);
+      console.log("Video has been successfully saved!");
+}catch(ex){
+  console.log("ERRRRRRR: "+ex);
+}
+
+}
+
+// var getFavoritesList = function() {
+//   MongoClient.connect(url, function(err, db) {
+//     assert.equal(null, err);
+//     console.log("Connected successfully to server");
+//     return db.favoriteVideos.find();
+//     db.close();
+//   });
+// }
 
 //=============================================socket connection handler
 io.on('connection', function(socket){ //////on connection success
   console.log('web interface connected!');
 
-  socket.on('message', function(mySentence){
+  socket.on('message', function(mySentence, videoId){
     console.log("Sentence received:" + mySentence);
 
-
+        console.log("current video is " + videoId);
         //############################################################################################################ Pavel call me so I can explain what I did here :D #################################################################
 
         var executeLogic = function(onWhat){
-            console.log("have a nice day" + onWhat);
-
-            //check if the data contains word "favorites"
-            if((onWhat.indexOf('favorites') > -1 && onWhat.indexOf('show') > -1) ||
-               (onWhat.indexOf('show') && onWhat.indexOf('favorite') > -1 &&   onWhat.indexOf('videos') > -1)){
-
-                //open tab with favorites
-                var msg = "Viewing favorite videos";
-                socket.emit("Viewing favorite videos", msg);
-                console.log("emitting data: " + msg );
-            }
-            //check if data array contains "show, trending" in a sentence
-            else if((onWhat.indexOf('trending') > -1 && onWhat.indexOf('show') > -1) ||
-               (onWhat.indexOf('show') && onWhat.indexOf('trending') > -1 &&   onWhat.indexOf('videos') > -1)){
-
-                //open tab with trending videos
-                var msg = "Viewing favorite videos";
-                socket.emit("Viewing favorite videos", msg);
-                console.log("emitting data: " + msg );
-            }
-            else if((onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1 && onWhat.indexOf('number') > -1)){
-              //take next word from word "number"
-              if(onWhat[onWhat.indexOf('number') + 1] != ''){
-                //if the next word after word "number" is not empty - read it
-                //msg will contain an integer or a number value as a word;
-                //TODO --- integrate middleware for number output unification (either int either word)
-                var msg = onWhat[onWhat.indexOf('number') + 1];
-                //emmit command and video number to client
-                socket.emit("Select video", msg);
-                console.log("Selecting video " + onWhat[onWhat.indexOf('number') + 1] + " from the list");
-              }
-            }
-            else if(onWhat.indexOf('search') > -1 && onWhat.indexOf('for') > -1){
+             if(onWhat.indexOf('search') > -1 && onWhat.indexOf('for') > -1){
               //take all words besides "for" and "search"
               var plainkeywords = onWhat;
               plainkeywords.splice(plainkeywords.indexOf('search'), 1);
@@ -92,12 +81,90 @@ io.on('connection', function(socket){ //////on connection success
 
               console.log("plain keywords: " + plainkeywords);
               //Use plainkeywords to make a request to youtube
-              searchOnYoutube(plainkeywords.join('&'));
+              searchOnYoutube(plainkeywords);
                 console.log("Search was invoked! ");
-
             }
-            else if((onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1) ||
-                     onWhat.indexOf('play') > -1){
+            //check if the data contains word "favorites"
+            else if(onWhat.indexOf('show') && onWhat.indexOf('favorite') > -1 &&  onWhat.indexOf('videos') > -1){
+
+                //open tab with favorites
+                var msg = "Viewing favorite videos";
+                socket.emit("Viewing favorite videos", msg);
+                console.log("emitting data: " + msg );
+            }
+            else if(onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1 && onWhat.indexOf('number') > -1){
+              //take next word from word "video"
+              // if(onWhat[onWhat.indexOf('video') + 1] != ''){
+              //   //if the next word after word "video" is not empty - read it
+              //   //msg will contain an integer or a number value as a word;
+              //   //below is an output unifier
+                var msg = onWhat[onWhat.indexOf('number') + 1];
+                //emmit command and video number to client
+
+                switch( onWhat[onWhat.indexOf('number') + 1] ){
+                  case "0":
+                  console.log("Selecting video number 0 from the list");
+                  socket.emit("Select video", 0);
+                  break;
+                  case "zero":
+                  console.log("Selecting video number 0 from the list");
+                  socket.emit("Select video", 0);
+                  break;
+
+                  case "1":
+                  console.log("Selecting video number 1 from the list");
+                  socket.emit("Select video", 1);
+                  break;
+                  case "one":
+                  console.log("Selecting video number 1 from the list");
+                  socket.emit("Select video", 1);
+                  break;
+
+                  case  "2":
+                  console.log("Selecting video number 2 from the list");
+                  socket.emit("Select video", 2);
+                  break;
+                  case  "two":
+                  console.log("Selecting video number 2 from the list");
+                  socket.emit("Select video", 2);
+                  break;
+
+                  case "3":
+                  console.log("Selecting video number 3 from the list");
+                  socket.emit("Select video", 3);
+                  break;
+                  case "three":
+                  console.log("Selecting video number 3 from the list");
+                  socket.emit("Select video", 3);
+                  break;
+
+                  case "4":
+                  console.log("Selecting video number 4 from the list");
+                  socket.emit("Select video", 4);
+                  break;
+                  case "four":
+                  console.log("Selecting video number 4 from the list");
+                  socket.emit("Select video", 4);
+                  break;
+
+                  // case "5":
+                  // console.log("Selecting video number 5 from the list");
+                  // socket.emit("Select video", 5);
+                  // break;
+                  //
+                  // case "five":
+                  // console.log("Selecting video number 5 from the list");
+                  // socket.emit("Select video", 5);
+                  // break;
+
+                  default:
+                  console.log("ERROR: VIDEO " + onWhat[onWhat.indexOf('video') + 1] + " not recognized");
+                  break;
+
+
+              }
+            }
+            else if((onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1)){
               //start playing video currently set in a player window
                 var msg = "Playing currently selected video";
                 socket.emit("play current", msg);
@@ -105,10 +172,16 @@ io.on('connection', function(socket){ //////on connection success
             }
             else if((onWhat.indexOf('stop') > -1 && onWhat.indexOf('video') > -1) ||
                      onWhat.indexOf('stop') > -1){
-              //stop playing video currently set in a player window
-              var msg = "Stopping currently selected video";
-              socket.emit("stop current", msg);
-              console.log("emitting data: " + msg);
+                //stop playing video currently set in a player window
+                var msg = "Stopping currently selected video";
+                socket.emit("stop current", msg);
+                console.log("emitting data: " + msg);
+            }
+            else if(onWhat.indexOf('add') > -1 && onWhat.indexOf('to') > -1 && onWhat.indexOf('favorites') > -1){
+                //Add video to favorites
+                var msg = "adding video to favorites";
+                console.log("received favorite video from client! adding to db... " + msg );
+                addToFavorites(msg);
             }
             else if((onWhat.indexOf('next') > -1 && onWhat.indexOf('video') > -1) ||
                      onWhat.indexOf('next') > -1){
@@ -124,222 +197,22 @@ io.on('connection', function(socket){ //////on connection success
         //function split will split a string into words and insert them into an array
         var transformedSentence = mySentence.split(" ");
         console.log("transformed sentence:" + transformedSentence);
-        //catch a trigger word "please"
+        //catch wake word "please"
         //an if statement below will deal with a white space in a beginning of some sentences
         if(transformedSentence[0] != ''){
-          if( transformedSentence[0] == 'please'){
+           if( transformedSentence[0] == 'please'){
             var data = transformedSentence.slice(1, transformedSentence.length);
             executeLogic(data);
 
-          }
+           }
         }
         else{
-          if( transformedSentence[1] == 'please'){
+           if( transformedSentence[1] == 'please'){
             var data = transformedSentence.slice(2, transformedSentence.length);
             executeLogic(data);
 
-          }
+           }
         }
-
-
-
-
-        var word = '';
-        var sentence = mySentence;
-
-        var utterance1 = "search";                      //search for keyword
-        var utterance2 = "create";                      //create account
-        var utterance3 = "switch";                      //switch between accounts
-        var utterance4 = "favorite";                    //view favorite videos
-        var utterance5 = "trending";                    //view trending videos
-        var utterance6 = "history";                     //view history
-        var utterance7 = "later";                       //view videos added to "watch later"
-        var utterance8 = "add";                         //add current video to favorites
-        var utterance9 = "play";                        //play video #x from list
-
-        for (var i = 0; i < sentence.length; i++) {
-            if (sentence.charAt(i) != ' ') {
-                word += sentence.charAt(i);
-                if (i == sentence.length - 1) {
-                    if (word == utterance1) {
-                        var substring = sentence.substring(sentence.indexOf("search") + 7);
-                        if (substring.search("for") == -1) {
-                            var keyword = substring;
-                        }
-                        else {
-                            var keyword = substring.substring(substring.indexOf("for") + 4);
-                        }
-
-                        var msg = "Searching by keyword";
-                        socket.emit("Searching by keyword", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance2) {
-                        var msg = "Creating account";
-                        socket.emit("Creating account", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance3) {
-                        var msg = "Switching to account";
-                        socket.emit("Switching to account", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance4) {
-                        var msg = "Viewing favorite videos";
-                        socket.emit("Viewing favorite videos", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance5) {
-                        var msg = "Viewing trending videos";
-                        socket.emit("Viewing trending videos", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance6) {
-                        var msg = "Viewing previously watched videos";
-                        socket.emit("Viewing previously watched videos", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance7) {
-                        var msg = "Adding video to 'Watch later' list";
-                        socket.emit("Adding video to 'Watch later' list", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance8) {
-                        var msg = "Adding video to favorites";
-                        socket.emit("Adding video to favorites", msg);
-                        console.log("emitting data: " + msg );
-                    }
-                    else if (word == utterance9) {
-                        if ((sentence.search("one") != -1) || (sentence.search("two") != -1) || (sentence.search("three") != -1) || (sentence.search("four") != -1) || (sentence.search("five") != -1) || (sentence.search("six") != -1) || (sentence.search("1") != -1) || (sentence.search("2") != -1) || (sentence.search("3") != -1) || (sentence.search("4") != -1) || (sentence.search("5") != -1) || (sentence.search("6") != -1)) {
-                            if ((sentence.search("1") != -1) || (sentence.search("one") != -1)) {
-                                var number = 1;
-                            }
-                            else if ((sentence.search("2") != -1) || (sentence.search("two") != -1)) {
-                                var number = 2;
-                            }
-                            else if ((sentence.search("3") != -1) || (sentence.search("three") != -1)) {
-                                var number = 3;
-                            }
-                            else if ((sentence.search("4") != -1) || (sentence.search("four") != -1)) {
-                                var number = 4;
-                            }
-                            else if ((sentence.search("5") != -1) || (sentence.search("five") != -1)) {
-                                var number = 5;
-                            }
-                            else if ((sentence.search("6") != -1) || (sentence.search("six") != -1)) {
-                                var number = 6;
-                            }
-
-                            var msg = "Selecting video from list";
-                            socket.emit("Selecting video from list", msg);
-                        }
-
-                        else if (sentence.search("next") != -1) {
-                            var msg = "Playing next video from playlist";
-                            socket.emit("Playing next video from playlist", msg);
-                        }
-                        else if (sentence.search("previous") != -1) {
-                            var msg = "Playing previous video from playlist";
-                            socket.emit("Playing previous video from playlist", msg);
-                        }
-                        else {
-                            var msg = "Playing/resuming video";
-                            socket.emit("Playing/resuming video", msg);
-                        }
-                    }
-                }
-            }
-            else if (word == utterance1) {
-                var substring = sentence.substring(sentence.indexOf("search") + 7);
-                if (substring.search("for") == -1) {
-                    var keyword = substring;
-                }
-                else {
-                    var keyword = substring.substring(substring.indexOf("for") + 4);
-                }
-
-                var msg = "Searching by keyword";
-                socket.emit("Searching by keyword", msg);
-                break;
-            }
-            else if (word == utterance2) {
-                var msg = "Creating account";
-                socket.emit("Creating account", msg);
-                break;
-            }
-            else if (word == utterance3) {
-                var msg = "Switching to account";
-                socket.emit("Switching to account", msg);
-                break;
-            }
-            else if (word == utterance4) {
-                var msg = "Viewing favorite videos";
-                socket.emit("Viewing favorite videos", msg);
-                break;
-            }
-            else if (word == utterance5) {
-                var msg = "Viewing trending videos";
-                socket.emit("Viewing trending videos", msg);
-                break;
-            }
-            else if (word == utterance6) {
-                var msg = "Viewing previously watched videos";
-                socket.emit("Viewing previously watched videos", msg);
-                break;
-            }
-            else if (word == utterance7) {
-                var msg = "Adding video to 'Watch later' list";
-                socket.emit("Adding video to 'Watch later' list", msg);
-                break;
-            }
-            else if (word == utterance8) {
-                var msg = "Adding video to favorites";
-                socket.emit("Adding video to favorites", msg);
-                break;
-            }
-            else if (word == utterance9) {
-                if ((sentence.search("one") != -1) || (sentence.search("two") != -1) || (sentence.search("three") != -1) || (sentence.search("four") != -1) || (sentence.search("five") != -1) || (sentence.search("six") != -1) || (sentence.search("1") != -1) || (sentence.search("2") != -1) || (sentence.search("3") != -1) || (sentence.search("4") != -1) || (sentence.search("5") != -1) || (sentence.search("6") != -1)) {
-                            if ((sentence.search("1") != -1) || (sentence.search("one") != -1)) {
-                                var number = 1;
-                            }
-                            else if ((sentence.search("2") != -1) || (sentence.search("two") != -1)) {
-                                var number = 2;
-                            }
-                            else if ((sentence.search("3") != -1) || (sentence.search("three") != -1)) {
-                                var number = 3;
-                            }
-                            else if ((sentence.search("4") != -1) || (sentence.search("four") != -1)) {
-                                var number = 4;
-                            }
-                            else if ((sentence.search("5") != -1) || (sentence.search("five") != -1)) {
-                                var number = 5;
-                            }
-                            else if ((sentence.search("6") != -1) || (sentence.search("six") != -1)) {
-                                var number = 6;
-                            }
-
-                            var msg = "Selecting video from list";
-                            socket.emit("Selecting video from list", msg);
-                        }
-                        else if (sentence.search("next") != -1) {
-                            var msg = "Playing next video from playlist";
-                            socket.emit("Playing next video from playlist", msg);
-                        }
-                        else if (sentence.search("previous") != -1) {
-                            var msg = "Playing previous video from playlist";
-                            socket.emit("Playing previous video from playlist", msg);
-                        }
-                        else {
-                            var msg = "Playing/resuming video";
-                            socket.emit("Playing/resuming video", msg);
-                        }
-                break;
-            }
-            else {
-            word = '';
-            }
-        }
-
       });
 
   socket.on('disconnect', function(){ /////on disconnect
@@ -355,35 +228,32 @@ io.on('connection', function(socket){ //////on connection success
 
 //=============================================search by keyphrase or keyword
 function searchOnYoutube(keyphrase){
+  var joined = keyphrase.join('&');
   var apikey = "AIzaSyDN3GpOWwYKIblddoDC-h_nkcTzz8aA3tc";
   var baseURL = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=";
-  var searchquery = keyphrase + "&key=";
+  var searchquery = joined + "&key=";
   var preparedrequest = baseURL + searchquery + apikey;
   console.log("YOUTUBE URL: " + preparedrequest);
-  console.log("1. posting to youtube");
   return postToYoutube(preparedrequest);
 }
 
 
 //=============================================create POST request to youtube
 function postToYoutube(url){
-
   var headers = {
       'User-Agent':       'Super Agent/0.0.1',
       'Content-Type':     'application/x-www-form-urlencoded'
   }
-
   var options = {
     url: url,
     method: 'GET',
     headers: headers,
     qs: {'key1': 'xxx', 'key2': 'yyy'}
   }
-
   request( options, function (error, response, body) {
           if (!error && response.statusCode == 200) {
             console.log("2. parsing response body...");
-                return extractPlaylist(body);
+                  socket.emit("search for", body);
           }
           else if(error){
             console.log(error);
@@ -391,18 +261,4 @@ function postToYoutube(url){
             return "";
           }
       });
-
-
-}
-
-
-
-//==============================================extract video playlist from response body
-
-function extractPlaylist(responseBody){
-
-
-
-  socket.emit("search for", responseBody);
-  console.log("emitting response body to the client!");
 }

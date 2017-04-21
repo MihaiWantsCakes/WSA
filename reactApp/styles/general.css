@@ -189,10 +189,28 @@
 
 .video_card_image{
   width: 100%;
-  height: auto;
+  max-height: 220px;
+}
+.single-video-card{
+  height: 350px;
 }
 
+#user_sentence_log_wrapper{
+  min-height: 40px;
+}
+
+#user_sentence_log{
+  font-weight: 200;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+h4 strong{
+      color: cornflowerblue!important;
+}
+
+/*
 iframe{
   width: 510px;
   height: 290px;
-}
+}*/

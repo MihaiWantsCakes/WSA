@@ -3,17 +3,25 @@ import ReactDOM from 'react-dom';
 
 
 class FavoriteVideoPage extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      favoriteList: this.props.favoriteList
+    }
+  }
+
+  componentWillUpdate(nextProps, nextState){
+    if(this.props.favoriteList != nextProps.favoriteList){
+      this.setState({
+        favoriteList: nextProps.favoriteList
+      });
+    }
+  }
+
   render(){
     return(
-      <div style={{width:'100%', display:'flex'}}>
-        <ul>
-          <li>Favorite video number 1</li>
-          <li>Favorite video number 2</li>
-          <li>Favorite video number 3</li>
-          <li>Favorite video number 4</li>
-          <li>Favorite video number 5</li>
-          <li>Favorite video number 6</li>
-        </ul>
+      <div>
+        {this.state.favoriteList}
       </div>
     );
   }

@@ -152,10 +152,20 @@ export default StyleSheet.create({
     },
     "video_card_image": {
         "width": "100%",
-        "height": "auto"
+        "maxHeight": 220
     },
-    "iframe": {
-        "width": 510,
-        "height": 290
+    "single-video-card": {
+        "height": 350
+    },
+    "user_sentence_log_wrapper": {
+        "minHeight": 40
+    },
+    "user_sentence_log": {
+        "fontWeight": "200",
+        "textTransform": "uppercase",
+        "textAlign": "center"
+    },
+    "h4 strong": {
+        "color": "cornflowerblue!important"
     }
 });

@@ -13,77 +13,11 @@ import PageLogWindow from './components/PageLogWindow.jsx';
 
 //GLOBALS
 var active_tab = 'Homepage';
+var log_message = '';
+var current_video = '';
+var favoriteList = '';
 var message = '';
-var searchResultList = [];
-
-//FUNCTIONS
-var executeAction = function(action, target, message){
-    if(action == 'go to'){
-      setActiveTab(target, message);
-    }
-    else if(action == 'stop current'){
-
-    }
-    else if(action == 'select video'){
-      //DO THE VIDEO SELECTION here
-      //allow selection of video only after search
-      if(this.active_tab == 'Search for'){
-
-      }
-    }
-    else if(action == 'update log'){
-      updateLog(message);
-    }
-}
-
-var parseResponseBody = function(responseBody){
-
-   //
-  try{
-    var parsedResponseBody = JSON.parse(responseBody);
-    console.log("number of items: " + parsedResponseBody.items.length);
-    for(var i = 0; i < parsedResponseBody.items.length; i++){
-      var singleresult = [parsedResponseBody.items[i].id.videoId, parsedResponseBody.items[i].snippet.title, parsedResponseBody.items[i].snippet.description,  parsedResponseBody.items[i].snippet.thumbnails.default.url ];
-      console.log("pushing one video: "+parsedResponseBody.items[i].id.videoId);
-      searchResultList.push(singleresult);
-    }
-    return searchResultList;
-  }
-  catch(ex){
-
-  }
-
-}
-
-
-
-var setActiveTab = function(tab, message){
-  active_tab = tab;
-  console.log("active tab set!" + tab);
-  ReactDOM.render(<App data={message} active_tab={active_tab}/>, document.getElementById('app'));
-};
-
-var updateLog = function(message){
-  console.log("log bar updated");
-//  ReactDOM.render(<App request_from_user={request_from_user} response_from_server={response_from_server} active_tab={active_tab}/>, document.getElementById('app'));
-};
-
- var sendMessage = function(text){
-
-   socket.emit('message', text);
-   console.log("sentence sent: " + text );
- };
-
-//SPEACH API
-try {
-  const onAnythingSaid = text => console.log(`Interim text: ${text}`);
-  const onFinalised = text => sendMessage(text);//console.log(`Finalised text: ${text}`);
-  const listener = new SpeechToText(onAnythingSaid, onFinalised);
-  listener.startListening();
-  // TODO: on finalised result - restart listener
-} catch (error) {
-  console.log(error);
-}
+var playerPlaying = false;
 
 
 //SOCKET.IO
@@ -94,70 +28,83 @@ socket.on('connection', function(){
   console.log("connection established!");
 });
 
-//PAGE ROUTING
 
-socket.on('switch next tab', function(msg){
-  console.log("the message: "+msg);
-});
+//FUNCTIONS
+var executeAction = function(){
+  ReactDOM.render(<App data={message}
+                       active_tab={active_tab}
+                       current_video={current_video}
+                       playerPlaying={playerPlaying}
+                       log_message={log_message}
+                       favoriteList={favoriteList}
+                       />, document.getElementById('app'));
+};
 
-socket.on('go back', function(msg){
-  console.log("the message: "+msg);
-});
+var updateLog = function(text){
+  console.log("log bar updated");
+  log_message = text;
+  executeAction();
+};
 
-socket.on('go to video page', function(msg){
-  console.log("the message: "+msg);
-  executeAction('update log', msg);
-  executeAction('go to', 'Watch', msg);
-});
+ var sendMessage = function(text){
+   socket.emit('message', text, current_video);
+   console.log("sentence sent: " + text );
+ };
 
-socket.on('go to homepage', function(msg){
-  console.log("the message: "+msg);
-  executeAction('go to', 'Homepage', msg);
+  // var addToFavorites = function(videoId) {
+  //
+  // };
 
-});
+//SPEECH API
 
-socket.on('go to settings page', function(msg){
-  console.log("the message: "+msg);
-    executeAction('go to', 'Settings');
-  });
+var startListening = function() {
+  try {
+    const onAnythingSaid = text => console.log(`Interim text: ${text}`);
+    const onFinalised = text => sendMessage(text) & updateLog(text) ;
+    const onFinishedListening = text => startListening();
+    const listener = new SpeechToText(onAnythingSaid, onFinalised, onFinishedListening);
+    listener.startListening();
+  } catch (error) {
+    console.log(error);
+  }
+}
 
+startListening();
+// TODO: on finalised result - restart listener
 
-socket.on('go to favorite list page', function(msg){
-  console.log("the message: "+msg);
-    executeAction('go to', 'Favorites');
-});
+//GET FAVORITE LIST
 
-socket.on('show help window', function(msg){
-  console.log("the message: "+msg);
-  executeAction('go to', 'Help');
-});
-
+socket.on('favorite list', function(msg) {
+  favoriteList = msg;
+  executeAction();
+})
 
 //PLAYER FUNCTIONS
 
 socket.on('play current', function(msg){
-  console.log("the message: "+msg);
-  executeAction('play', 'Watch');
+  playerPlaying = true;
+  executeAction();
 });
 
 socket.on('stop current', function(msg){
-  console.log("the message: "+msg);
-  executeAction('stop', 'Watch');
+  playerPlaying = false;
+  executeAction();
 });
 
 
 //SEARCH YOUTUBE RELATED
 
-socket.on('select video', function(msg){
-  console.log("Selecting video number " + msg);
-  executeAction('select video', '', msg);
-
-});
-
 socket.on('search for', function(msg){
-  console.log("RECEIVED results: \n" + msg);
-  executeAction('go to', 'Search for', msg);
-//  executeAction('update log', request_from_user);
+  active_tab = 'Search for';
+  message = msg;
+  executeAction();
 });
 
-ReactDOM.render(<App data={message}  active_tab={active_tab}/>, document.getElementById('app'));
+socket.on('Select video', function(msg){
+  console.log("Selecting video number " + msg);
+  active_tab = 'Watch';
+  current_video = msg;
+  executeAction();
+});
+
+executeAction();
