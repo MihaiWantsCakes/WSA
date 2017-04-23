@@ -10,7 +10,6 @@ var mongoose = require('mongoose');
 var socket = io;
 //=============================================Start HTTPS server on port 8000
 server.listen(8000);
-var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 console.log('listening...');
@@ -44,23 +43,22 @@ var favoriteVideoModel = mongoose.model('favoriteVideo',
 mongoose.connect('mongodb://localhost/favoriteVideos');
 
 var addToFavorites = function(video) {
-try{
-      mongoose.favoriteVideos.save(video);
-      console.log("Video has been successfully saved!");
-}catch(ex){
-  console.log("ERRRRRRR: "+ex);
+  try{
+    mongoose.favoriteVideos.save(video);
+    console.log("Video has been successfully saved!");
+  }catch(ex){
+    console.log("ERRRRRRR: "+ex);
+  }
 }
 
+var getFavoritesList = function() {
+  MongoClient.connect(url, function(err, db) {
+    assert.equal(null, err);
+    console.log("Connected successfully to server");
+    return db.favoriteVideos.find();
+    db.close();
+  });
 }
-
-// var getFavoritesList = function() {
-//   MongoClient.connect(url, function(err, db) {
-//     assert.equal(null, err);
-//     console.log("Connected successfully to server");
-//     return db.favoriteVideos.find();
-//     db.close();
-//   });
-// }
 
 //=============================================socket connection handler
 io.on('connection', function(socket){ //////on connection success
@@ -92,15 +90,14 @@ io.on('connection', function(socket){ //////on connection success
                 socket.emit("Viewing favorite videos", msg);
                 console.log("emitting data: " + msg );
             }
+            //take next word from word "video"
+            // if(onWhat[onWhat.indexOf('video') + 1] != ''){
+            //   //if the next word after word "video" is not empty - read it
+            //   //msg will contain an integer or a number value as a word;
+            //   //below is an output unifier
             else if(onWhat.indexOf('play') > -1 && onWhat.indexOf('video') > -1 && onWhat.indexOf('number') > -1){
-              //take next word from word "video"
-              // if(onWhat[onWhat.indexOf('video') + 1] != ''){
-              //   //if the next word after word "video" is not empty - read it
-              //   //msg will contain an integer or a number value as a word;
-              //   //below is an output unifier
                 var msg = onWhat[onWhat.indexOf('number') + 1];
                 //emmit command and video number to client
-
                 switch( onWhat[onWhat.indexOf('number') + 1] ){
                   case "0":
                   console.log("Selecting video number 0 from the list");
@@ -181,7 +178,7 @@ io.on('connection', function(socket){ //////on connection success
                 //Add video to favorites
                 var msg = "adding video to favorites";
                 console.log("received favorite video from client! adding to db... " + msg );
-                addToFavorites(msg);
+                socket.emit('get current video');
             }
             else if((onWhat.indexOf('next') > -1 && onWhat.indexOf('video') > -1) ||
                      onWhat.indexOf('next') > -1){
@@ -214,6 +211,13 @@ io.on('connection', function(socket){ //////on connection success
            }
         }
       });
+
+
+  socket.on('sending current video', function(msg){
+    addToFavorites(msg);
+    console.log("video added to favorite list!");
+  });
+
 
   socket.on('disconnect', function(){ /////on disconnect
     console.log('web interface disconnected');

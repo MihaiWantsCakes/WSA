@@ -3,19 +3,13 @@ import {ReactDOM, render} from 'react-dom';
 import FavoriteVideoPage from '../pages/FavoriteVideoPage.jsx';
 import WatchVideoPage from '../pages/WatchVideoPage.jsx';
 import Homepage from '../pages/Homepage.jsx';
-import VideoList from '../components/VideoList.jsx'
+import VideoList from '../pages/VideoList.jsx'
 
 
 
 class Navigation extends React.Component{
   constructor(props){
     super(props);
-    this.isHomepage = this.isHomepage.bind(this);
-    this.isWatch = this.isWatch.bind(this);
-    this.isSearch = this.isSearch.bind(this);
-    this.createVideoCards = this.createVideoCards.bind(this);
-    var parsedResponseBody;
-    // this.createVideoCards(this.props.data);
     this.state = {
       data: '',
       active_tab: '',
@@ -25,6 +19,12 @@ class Navigation extends React.Component{
       videoCards: '',
       playerPlaying: ''
     }
+    var parsedResponseBody;
+    this.isHomepage = this.isHomepage.bind(this);
+    this.isWatch = this.isWatch.bind(this);
+    this.isSearch = this.isSearch.bind(this);
+    this.createVideoCards = this.createVideoCards.bind(this);
+    // this.createVideoCards(this.props.data);
   }
 
 
@@ -65,36 +65,35 @@ class Navigation extends React.Component{
     }
 
   componentWillUpdate(nextProps, nextState){
-    if(this.props.playerPlaying != nextProps.playerPlaying){
-      this.setState({
-        playerPlaying: nextProps.playerPlaying
-      });
-      console.log("navigation state has changed. playerPlaying ");
-    }
     /////////////////////////////////////on data change
     if (this.props.data != nextProps.data) {
-        this.createVideoCards(nextProps.data);
+      this.createVideoCards(nextProps.data);
       this.setState({
         data: nextProps.data
       });
       console.log("navigation state has changed. data ");
     }
+    /////////////////////////////////////on current_video value changed
+    if (this.props.current_video != nextProps.current_video) {
+      this.setState({
+        current_video_id: this.parsedResponseBody.items[nextProps.current_video].id.videoId
+      });
+      console.log("navigation state has changed. current_video:  " + this.parsedResponseBody.items[nextProps.current_video].id.videoId);
+    }
     /////////////////////////////////////on active tab value change
-   if (this.props.active_tab != nextProps.active_tab) {
+    if (this.props.active_tab != nextProps.active_tab) {
       this.createVideoCards(nextProps.data);
       this.setState({
         active_tab: nextProps.active_tab
       });
       console.log("navigation state has changed. active_tab ");
     }
-    /////////////////////////////////////on current_video value changed
-    if (this.props.current_video != nextProps.current_video && this.props.data != undefined) {
-        var temp = JSON.parse(this.props.data.items[nextProps.current_video].id.videoId);
-        this.setState({
-          current_video_id: temp
-        });
-      console.log("navigation state has changed. current_video:  " + temp);
-      }
+    if(this.props.playerPlaying != nextProps.playerPlaying){
+      this.setState({
+        playerPlaying: nextProps.playerPlaying
+      });
+      console.log("navigation state has changed. playerPlaying ");
+    }
   }
 
 
@@ -141,7 +140,6 @@ class Navigation extends React.Component{
 
   render(){
     var content_class = 'tab-pane fade in ';
-
     return(
       <div className="">
           <ul className="nav nav-tabs nav-justified">
@@ -162,7 +160,7 @@ class Navigation extends React.Component{
           </div>
           <div id="watch" className={content_class + this.isWatch()}>
             <div className="col-md-12 med-top-bot-margin">
-             <WatchVideoPage videoList={this.state.formattedResult} current_video={this.state.current_video_id} playerPlaying={this.props.playerPlaying}/>
+             <WatchVideoPage videoList={this.state.formattedResult} current_video_id={this.state.current_video_id} playerPlaying={this.props.playerPlaying}/>
             </div>
           </div>
           <div id="favorites" className={content_class + this.isFavorites()}>

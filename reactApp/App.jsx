@@ -5,43 +5,9 @@ import Navigation from './components/Navigation.jsx';
 class App extends React.Component {
     constructor(props){
       super(props);
-      this.state = {
-        data: '',
-        active_tab: '',
-        current_video: '',
-        playerPlaying: '',
-        log_message: ''
-      }
     };
 
-    componentWillUpdate(nextProps, nextState){
 
-      if(this.props.playerPlaying != nextProps.playerPlaying){
-        this.setState({
-          playerPlaying: nextProps.playerPlaying
-        });
-      }
-      if (this.props.data != nextProps.data) {
-        this.setState({
-          data: nextProps.data
-        });
-      }
-      if (this.props.active_tab != nextProps.active_tab) {
-        this.setState({
-          active_tab: nextProps.active_tab
-        });
-      }
-      if (this.props.current_video != nextProps.current_video) {
-          this.setState({
-            current_video: nextProps.current_video
-          });
-        }
-      if (this.props.log_message != nextProps.log_message) {
-          this.setState({
-            log_message: nextProps.log_message
-          });
-        }
-    }
 
     render() {
         return (
