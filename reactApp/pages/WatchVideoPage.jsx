@@ -17,9 +17,8 @@ class WatchVideoPage extends React.Component{
     this.setPosition = this.setPosition.bind(this);
     this.toggleState = this.toggleState.bind(this);
     this.handleVolumeChange = this.handleVolumeChange.bind(this);
-    this.addToFavorites = this.addToFavorites.bind(this);
     this.state = {
-     current_video: '',
+     current_video_id: '',
      videoList: '',
      position: 0,
      playing: false,
@@ -29,23 +28,13 @@ class WatchVideoPage extends React.Component{
   }
 
 
-  addToFavorites(){
-
-  }
-
   componentWillUpdate(nextProps, nextState){
-    if(this.props.current_video != nextProps.current_video){
-      this.setState({
-        current_video: nextProps.current_video
-      });
-      console.log("updating video component. current_video (state) is " + this.state.current_video );
-
-    }
     if(this.props.playerPlaying != nextProps.playerPlaying){
       console.log("updating video component. playerPlaying" + nextProps.playerPlaying);
       this.setState({
         playing: nextProps.playerPlaying
       });
+      console.log("player playing: " + this.state.playing);
     }
   }
 
@@ -86,7 +75,7 @@ class WatchVideoPage extends React.Component{
           <div>
             <YouTubeVideo
               position={this.state.position}
-              videoId={this.state.current_video}
+              videoId={this.props.current_video_id}
               playing={this.state.playing}
               volume={this.state.volume}
               width="760"

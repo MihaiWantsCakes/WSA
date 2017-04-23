@@ -8,7 +8,7 @@ import {
 import io from 'socket.io-client';
 import SpeechToText from 'speech-to-text';
 import Navigation from './components/Navigation.jsx';
-import PageLogWindow from './components/PageLogWindow.jsx';
+
 
 
 //GLOBALS
@@ -89,6 +89,17 @@ socket.on('play current', function(msg){
 socket.on('stop current', function(msg){
   playerPlaying = false;
   executeAction();
+});
+
+socket.on('get current video', function(){
+    var parsedResponseBody = JSON.parse(message);
+    var favoriteVideo = {
+      videoId: parsedResponseBody.items[current_video].id.videoId,
+      videoTitle: parsedResponseBody.items[current_video].snippet.title,
+      videoDescription: parsedResponseBody.items[current_video].snippet.description,
+      videoThumbnailUrl: parsedResponseBody.items[current_video].snippet.thumbnails.medium.url
+    };
+    socket.emit('sending current video', favoriteVideo);
 });
 
 
