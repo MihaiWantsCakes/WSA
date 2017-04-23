@@ -20,6 +20,8 @@ var message = '';
 var playerPlaying = false;
 
 
+var startTime;// = new Date().now();
+
 //SOCKET.IO
 
 var socket = io('http://localhost:8000');
@@ -49,6 +51,7 @@ var updateLog = function(text){
  var sendMessage = function(text){
    socket.emit('message', text, current_video);
    console.log("sentence sent: " + text );
+   startTime = new Date().getTime();
  };
 
   // var addToFavorites = function(videoId) {
@@ -59,7 +62,7 @@ var updateLog = function(text){
 
 var startListening = function() {
   try {
-    const onAnythingSaid = text => console.log(`Interim text: ${text}`);
+    const onAnythingSaid = text => console.log("Interim text: " + text + " at " + new Date().getTime());
     const onFinalised = text => sendMessage(text) & updateLog(text) ;
     const onFinishedListening = text => startListening();
     const listener = new SpeechToText(onAnythingSaid, onFinalised, onFinishedListening);
@@ -75,6 +78,9 @@ startListening();
 //GET FAVORITE LIST
 
 socket.on('favorite list', function(msg) {
+
+  var time_until_response = new Date().getTime() - startTime;
+  console.log("response received in " +  time_until_response + " milliseconds");
   favoriteList = msg;
   executeAction();
 })
@@ -82,16 +88,25 @@ socket.on('favorite list', function(msg) {
 //PLAYER FUNCTIONS
 
 socket.on('play current', function(msg){
-  playerPlaying = true;
+
+  var time_until_response = new Date().getTime() - startTime;
+  console.log("response received in " +  time_until_response + " milliseconds");
+    playerPlaying = true;
   executeAction();
 });
 
 socket.on('stop current', function(msg){
-  playerPlaying = false;
+
+  var time_until_response = new Date().getTime() - startTime;
+  console.log("response received in " +  time_until_response + " milliseconds");
+    playerPlaying = false;
   executeAction();
 });
 
 socket.on('get current video', function(){
+
+  var time_until_response = new Date().getTime() - startTime;
+  console.log("response received in " +  time_until_response + " milliseconds");
     var parsedResponseBody = JSON.parse(message);
     var favoriteVideo = {
       videoId: parsedResponseBody.items[current_video].id.videoId,
@@ -108,10 +123,15 @@ socket.on('get current video', function(){
 socket.on('search for', function(msg){
   active_tab = 'Search for';
   message = msg;
+  var time_until_response = new Date().getTime() - startTime;
+  console.log("response received in " +  time_until_response + " milliseconds");
   executeAction();
 });
 
 socket.on('Select video', function(msg){
+
+  var time_until_response = new Date().getTime() - startTime;
+  console.log("response received in " +  time_until_response + " milliseconds");
   console.log("Selecting video number " + msg);
   active_tab = 'Watch';
   current_video = msg;

@@ -32,7 +32,7 @@ app.use(function (req, res, next) {
     // Pass to next layer of middleware
     next();
 });
-//connect to database server on localhost
+connect to database server on localhost
 var favoriteVideoModel = mongoose.model('favoriteVideo',
 {
   videoId: String,
@@ -184,6 +184,10 @@ io.on('connection', function(socket){ //////on connection success
                      onWhat.indexOf('next') > -1){
               //play next video in a player window (low priority)
             }
+            else if((onWhat.indexOf('go') > -1 && onWhat.indexOf('to') > -1){
+                socket.emit("go to", msg);
+                console.log("Switching page to " + msg);
+            }
             else if((onWhat.indexOf('previous') > -1 && onWhat.indexOf('video') > -1) ||
                      onWhat.indexOf('previous') > -1){
               //play previous video in a player window (low priority)
@@ -256,7 +260,6 @@ function postToYoutube(url){
   }
   request( options, function (error, response, body) {
           if (!error && response.statusCode == 200) {
-            console.log("2. parsing response body...");
                   socket.emit("search for", body);
           }
           else if(error){
